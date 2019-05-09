@@ -1,2 +1,72 @@
-db.sqlite3
-env
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*./__pycache__/
+
+# C extensions
+*.so
+
+## Generic files to ignore
+*~
+*.lock
+*.DS_Store
+*.swp
+*.out
+*.swo
+
+# IDEs
+.idea/
+.vscode/
+.settings/
+.metadata/
+
+# Distribution / packaging
+bin/
+build/
+develop-eggs/
+dist/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+/static/
+/*env/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Databases
+*.sql
+*.sqlite3
+*.db
+db.*
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+
+# Translations
+*.mo
+
+# Django stuff:
+*.log
+*.log.*
+*.pot
+
+# Env files
+*/*env/*
+*.env.*
+.env
+
+# docker
+data_mysql/
+data_redis/
