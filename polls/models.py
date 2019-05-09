@@ -3,6 +3,9 @@
 # Create your models here.
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
+from django.dispatch import receiver
+from django.db.models.signals import post_save
 import uuid
 
 
@@ -21,4 +24,14 @@ class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     choice_text = models.CharField(max_length=200)
     votes = models.IntegerField(default=0)
+
+class Teacher(models.Model):
+    user = models.OneToOneField(User, on_delete="models.CASCADE", related_name='teacher_profile')
+    name = models.CharField(max_length=200, help_text="Nombre del profesor")
+    last_name = models.CharField(max_length=200, help_text="Apellido del profesor")
+
+    def __str__(self):
+        return self.name + self.last_name
+
+
 

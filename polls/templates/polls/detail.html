@@ -1,12 +1,58 @@
-<h1>{{ question.question_text }}</h1>
+<head>
+  <!-- Plotly.js -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <!-- Numeric JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.min.js"></script>
+</head>
 
-{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+<body>
+{% for q in questions %}
+ --> todo el html
 
-<form action="{% url 'polls:vote' question.id %}" method="post">
-{% csrf_token %}
-{% for choice in question.choice_set.all %}
-    <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
-    <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br>
 {% endfor %}
-<input type="submit" value="Vote">
-</form>
+    {{ question.question_text }}
+  <div id="myDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
+  	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+	<script src="http://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script type="text/javascript">
+			$(document).ready(function(){
+        var endpoint = '/api/chart/data/'
+		var data_respuestas = data_votos = []
+		$.ajax({
+		    method: "GET",
+		    url: endpoint,
+		    success: function(data){
+		        data_respuestas = data.respuestas
+		        data_votos = data.votos
+		        ProcessVotos()
+		    },
+		    error: function(error_data){
+		        console.log("error")
+		    },
+		})
+		function ProcessVotos(){
+		    var data = [{
+		        y: data_votos,
+		        x: data_respuestas,
+		        type: 'bar',
+		        orientation: 'v',
+		        marker: {
+		            color: '#23b7e5',
+		        },
+		    }];
+
+		    var layout = {
+		      yaxis: {
+    range: [0, 7],
+    title: 'Numero de votos'
+  },
+		        title: 'Votos a la pregunta',
+		        margin: {l:200},
+		    };
+		    Plotly.newPlot('myDiv', data, layout);
+		}
+		})
+
+
+  </script>
+</body>

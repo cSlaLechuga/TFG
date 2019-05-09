@@ -3,9 +3,13 @@ import sys
 # Create your views here.
 from django.http import HttpResponse, HttpResponseRedirect
 from .models import Choice, Question
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.template import loader
 from django.urls import reverse
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 
 def index(request):
@@ -44,3 +48,39 @@ def vote(request, question_id):
         # user hits the Back button.
         return HttpResponseRedirect(reverse('polls:index'))
     # return HttpResponseRedirect(reverse('polls:index', args=(question.id,)))
+
+def signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('polls:index')
+    else:
+        form = UserCreationForm()
+    return render(request, 'registration/signup.html',{
+        'form': form
+    })
+
+class ChartData(APIView):
+    authentication_classes= []
+    permission_classes = []
+
+    def get(self,request,format= None):
+        resultado = dict()
+        # pk: es id de question, pasarlo x get
+        # Choice.objects.all() --> Choice.objects.filter(question__id=pk)
+        for choice in Choice.objects.all():
+            resultado[choice.choice_text] = choice.votes
+
+        dic_resultados = dict(resultado)
+
+        data = {
+            "respuestas": dic_resultados.keys(),
+            "votos": dic_resultados.values()
+       }
+
+
+
+        return Response(data)
+
+
