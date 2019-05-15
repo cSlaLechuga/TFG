@@ -1,20 +1,40 @@
 {% extends 'base.html' %}
 {% block content %}
 {% if latest_question_list %}
-    <ul>
-    {% for question in latest_question_list %}
-        <li><a class="font-weight-bold" href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
+<style type="text/css">
+.center-div
+{
 
-{% csrf_token %}
-       <form action="{% url 'polls:vote' question.id %}" method="post">
-      {% for choice in question.choice_set.all %}
-    <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
-    <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br>
-{% endfor %}
+margin: auto;
+top: 0;
+right: 0;
+bottom: 0;
+left: 0;
+width: 500px;
+max-height: 500px;
+border-radius: 3px;
+}
+</style>
+<ul>
+    {% for question in latest_question_list %}
+    <div  class="center-div">
+        <li><a class="font-weight-bold" href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
+        <form id="{{ choice.choice_id }}" action="{% url 'polls:vote' question.id %}" method="post">
+            {% csrf_token %}
+            {% for choice in question.choice_set.all %}
+            <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.choice_id }}" align="middle">
+            <label for="choice{{ forloop.counter }}" align="middle">{{ choice.choice_text }}</label><br>
+
+            {% endfor %}
             <input type="submit" value="Votar">
-     {% endfor %}
-    </ul>
+        </form>
+    </div>
+    {% endfor %}
+
+</ul>
 {% else %}
-    <p>No polls are available.</p>
+<div class="alert alert-danger" role="alert">
+    <strong>Error!</strong> No existen preguntas
+</div>
 {% endif %}
 {% endblock %}

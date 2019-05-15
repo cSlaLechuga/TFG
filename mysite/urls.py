@@ -26,6 +26,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
     path('signup/', views.signup, name='signup'),
-    path('api/chart/data/', ChartData.as_view(), name='api-chart-data')
+    #path('api/chart/data/', ChartData.as_view(), name='api-chart-data')
+    #path('api/chart/data/<uuid:pk>', ChartData.as_view(), name='api-chart-data')
 
 ]
