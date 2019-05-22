@@ -82,7 +82,7 @@
             <td>{{suma_true}}</td>
         </tr>
         <tr>
-            <td>Respuestas incorrectas</td>
+            <td>Respuestas Incorrectas</td>
             <td>{{ suma_wrong }}</td>
         </tr>
 
@@ -95,11 +95,15 @@
 
         </tbody>
     </table>
-
+<a href="{% url 'polls:export_csv' question.id%}" ><button type="button"  class="btn btn-secondary">Descargar informe .csv</button></a>
 </div>
 {% else %}
 <div class="container" class="center-div2">
-    <p>Votos a la pregunta: {{ question.question_text }}</p>
+     {% if type_choice == 'E' %}
+    <p>Votos a la encuesta: {{ question.question_text }}</p>
+    {% else %}
+    <p>Votos al test: {{ question.question_text }}
+    {% endif %}
     <table class="table table-striped">
         <thead>
         <tr>
@@ -126,7 +130,8 @@
     </table>
 
 </div>
-<a href="{% url 'polls:export_csv' %}" ><button type="button"  class="btn btn-secondary">Descargar informe .csv</button></a>
+
+<a href="{% url 'polls:export_csv' question.id%}" ><button type="button"  class="btn btn-secondary">Descargar informe .csv</button></a>
 {% endif %}
 
 {% else %}

@@ -9,6 +9,8 @@ from django.db.models.signals import post_save
 import uuid
 
 
+
+
 class Question(models.Model):
     question_text = models.CharField(max_length=200)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, help_text="Identificador unico de la pregunta")
@@ -42,14 +44,48 @@ class Choice(models.Model):
 
     def __str__(self):
         return self.choice_text
+class Departamento(models.Model):
+    nombre=models.CharField(max_length=30, help_text="Nombre del departamento")
 
-class Teacher(models.Model):
-    user = models.OneToOneField(User, on_delete="models.CASCADE", related_name='teacher_profile')
-    name = models.CharField(max_length=200, help_text="Nombre del profesor")
-    last_name = models.CharField(max_length=200, help_text="Apellido del profesor")
 
     def __str__(self):
-        return self.name + self.last_name
+        return self.nombre
+
+
+class Asignaturas(models.Model):
+    nombre= models.CharField(max_length=200, help_text="Asignatura")
+    codigo= models.CharField(max_length=10, help_text="Codigo de la asignatura")
+    departamento= models.ForeignKey(Departamento, on_delete=models.CASCADE)
+    #alumnos= models.ManyToManyField()
+
+    def __str__(self):
+        return self.nombre
+
+
+
+# class Profesores(models.Model):
+#     user = models.OneToOneField(User, on_delete="models.CASCADE")
+#     nombre = models.CharField(max_length=200, help_text="Nombre del profesor")
+#     is_docente= models.BooleanField(default=True)
+#     apellido = models.CharField(max_length=200, help_text="Apellido del profesor")
+#     asignaturas= models.ManyToManyField(Asignaturas)
+#     departamento= models.ForeignKey(Departamento,on_delete=models.CASCADE)
+#
+#     def __str__(self):
+#         return self.nombre + self.apellido
+
+class Alumno(models.Model):
+    #user = models.OneToOneField(User, on_delete="models.CASCADE", primary_key=True)
+    is_docente= models.BooleanField(default=False)
+    nombre = models.CharField(max_length=200, help_text="Nombre del alumno")
+    apellido = models.CharField(max_length=200, help_text="Apellido del alumno")
+    asignaturas= models.ManyToManyField(Asignaturas)
+    departamento= models.ForeignKey(Departamento, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.nombre + self.apellido
+
+
 
 
 

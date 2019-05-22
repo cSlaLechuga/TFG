@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+
+
+ <br>
+<h2>Paso 2: Crear Respuestas a la pregunta {{question_text}}</h2>
+<form method="POST" class="post-form">{% csrf_token %}
+    <br>
+
+{{ form.as_table }}
+    <br>
+    <br>
+
+    <br><br>
+    <button type="submit" class="btn btn-success">Guardar</button>
+</form>
+
+
+{% endblock %}

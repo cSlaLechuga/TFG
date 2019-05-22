@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container" class="center-div2">
+
+    <p>Lista de usuarios</p>
+
+
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Usuarios Registrados:</th>
+            <th>(Esta por ver)</th>
+        </tr>
+        </thead>
+        <tbody>
+
+
+        {% for alumno in users_list %}
+        <tr>
+            <td>{{ alumno }}</td>
+            <td></td>
+        </tr>
+        {% endfor %}
+
+
+        <td align='left'><strong>Total: {{user_count}}</strong></td>
+        <td> </td>
+
+        </tr>
+
+        </tbody>
+    </table>
+
+</div>
+
+
+{% endblock %}

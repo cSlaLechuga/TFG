@@ -1,10 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-</body>
-</html>
+{% load crispy_forms_tags %}
+{% crispy choice_form formset.form.helper %}
+{% crispy form form.helper %}
+{% block content %}
+
+
+
+
+<div class="card">
+    <div class="card-header">
+        <h2>Crear Pregunta</h2>
+    </div>
+    <div class="card-body">
+        <form class="form-inline" method="POST" action="{% url 'polls:post_question' %}" class="post-form">{% csrf_token %}
+            {% crispy form %}
+            <div class="mx-auto" style="width: 600px;">
+                {{choice_form|crispy}}
+            </div>
+            <button type="submit" class="btn btn-success">Guardar</button>
+        </form>
+    </div>
+</div>
+
+
+{% endblock %}
