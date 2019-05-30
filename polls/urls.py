@@ -11,7 +11,12 @@ urlpatterns = [
     path('<uuid:question_id>/export_csv/', views.export_csv, name='export_csv'),
     path('create_question/', views.post_question, name='post_question'),
     path('create_question/<uuid:question_id>/create_answer/', views.post_answer, name='post_answer'),
-    path('results/users_list/', views.users_list, name= 'users_list')
+    path('results/users_list/', views.users_list, name= 'users_list'),
+    path('results_asignaturas/', views.results_asignaturas, name='results_asignaturas'),
+    path('student_progress/', views.student_progress, name='student_progress'),
+    path('student_progress/export_csv_students/',views.export_csv_students, name='export_csv_students'),
+    path('<uuid:question_id>/export_csv_test_result/',views.export_csv_test_result, name='export_csv_test_result')
+
     #path('<uuid:question_id>/api/chart/data/', views.ChartData.as_view(), name='api-chart-data')
 
 ]

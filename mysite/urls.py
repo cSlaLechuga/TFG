@@ -24,8 +24,8 @@ urlpatterns = [
     path('polls/', include('polls.urls'), name='polls'),
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('signup/', views.signup, name='signup'),
-
+    path('signup_teacher/', views.signup_teacher, name='signup_teacher'),
+    path('signup_student/', views.signup_student, name='signup_student'),
     #path('api/chart/data/', ChartData.as_view(), name='api-chart-data')
     #path('api/chart/data/<uuid:pk>', ChartData.as_view(), name='api-chart-data')
 

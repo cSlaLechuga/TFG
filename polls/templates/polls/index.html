@@ -15,19 +15,24 @@ max-height: 500px;
 border-radius: 3px;
 }
 </style>
+
 <ul>
     {% for question in latest_question_list %}
-    <div  class="center-div">
-        <li><a class="font-weight-bold" href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
-        <form id="{{ choice.choice_id }}" action="{% url 'polls:vote' question.id %}" method="post">
-            {% csrf_token %}
-            {% for choice in question.choice_set.all %}
-            <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.choice_id }}" align="middle">
-            <label for="choice{{ forloop.counter }}" align="middle">{{ choice.choice_text }}</label><br>
+    <div class="container card mt-md-4">
+        <div class="row card-body">
+            <div  class="center-div">
+                <li><a class="font-weight-bold" href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
+                <form id="{{ choice.choice_id }}" action="{% url 'polls:vote' question.id %}" method="post">
+                    {% csrf_token %}
+                    {% for choice in question.choice_set.all %}
+                    <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.choice_id }}" align="middle">
+                    <label for="choice{{ forloop.counter }}" align="middle">{{ choice.choice_text }}</label><br>
 
-            {% endfor %}
-            <input type="submit" value="Votar">
-        </form>
+                    {% endfor %}
+                    <input type="submit" class="btn btn-primary" value="Votar">
+                </form>
+            </div>
+        </div>
     </div>
     {% endfor %}
 

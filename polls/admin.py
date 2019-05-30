@@ -6,7 +6,7 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
 from django.contrib import admin
 
-from .models import Question, Choice,Alumno
+from .models import Question, Choice, Profile, Asignaturas, Departamento
 from django.shortcuts import get_object_or_404
 
 
@@ -28,9 +28,10 @@ admin.site.register(Question, QuestionAdmin)
 
 
 
-#class MyUserAdmin(admin.ModelAdmin):
-#    list_display= ('is_teacher', 'is_student')
+
+admin.site.register(Profile)
+admin.site.register(Asignaturas)
+admin.site.register(Departamento)
 
 
-#admin.site.register(MyUser, MyUserAdmin)
 

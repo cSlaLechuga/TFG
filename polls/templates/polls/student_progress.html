@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<head xmlns="http://www.w3.org/1999/html">
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Numeric JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% for k,v in students_progress.items %}
+    <style type="text/css">
+    #myDiv{{ k }} {
+        max-width: 500px;
+        max-height: 250px;
+    }
+        #myDivBar {
+
+        float:right;
+    }
+
+.center-div
+{
+
+  margin: auto;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 500px;
+  height: 250px;
+  background-color: #ccc;
+  border-radius: 3px;
+}
+.center-left
+{
+  margin-left: 10%;
+   float:left;
+           max-width: 500px;
+}
+
+    </style>
+</head>
+<div class="container card mt-md-2">
+    <div class="row card-body">
+        {% if v.votes_OK > 0 or v.votes_FAIL > 0 %}
+        <strong class="col-xs-6 align-middle">{{ k }}</strong>
+        <div id="myDiv{{k}}" class="center-div "><!-- Plotly chart will be drawn inside this DIV --></div>
+        {% else %}
+        <div class="alert alert-warning text-center" role="alert">
+            {{k}} no ha respondido a ninguno de los tests publicados
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+
+<script type="text/javascript">
+{{v.votes_OK}}
+{{v.votes_FAIL}}
+var trace1 = {
+  x: [{{v.votes_FAIL}}],
+  y: [''],
+  name: 'Resp. Incorrectas',
+  orientation: 'h',
+  marker: {
+    color: 'rgba(255,153,51,0.6)',
+    width: 0.5
+  },
+  type: 'bar'
+};
+
+var trace2 = {
+  x: [{{v.votes_OK}}],
+  y: [''],
+  name: 'Resp. Correctas',
+  orientation: 'h',
+  type: 'bar',
+  marker: {
+    color: 'rgba(55,128,191,0.6)',
+    width: 0.5
+  }
+};
+
+var data = [trace1, trace2];
+
+var layout = {
+  title: '',
+  barmode: 'stack'
+};
+
+Plotly.newPlot('myDiv{{k}}', data, layout);
+</script>
+{% endfor %}
+<a href="{% url 'polls:export_csv_students' %}" ><button type="button"  class="btn btn-secondary mt-md-5">Descargar informe .csv</button></a>
+{% endblock %}

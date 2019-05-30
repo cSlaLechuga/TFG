@@ -43,15 +43,18 @@
   background-color: #ccc;
   border-radius: 3px;
 }
+
+
+
     </style>
 </head>
 
 <a>
 
-{% if type_choice == 'T' %}
+    {% if type_choice == 'T' %}
 
-{% endif %}
-{% if sum > 0 %}
+    {% endif %}
+    {% if sum > 0 %}
 
     {% if type_choice == 'E' %}
     <h2>Resultados de la encuesta: {{ question.question_text }}</h2>
@@ -59,92 +62,118 @@
     <h2>Resultados del test: {{ question.question_text }}</h2>
     {% endif %}
 
-<div id="myDiv" class="center-div"><!-- Plotly chart will be drawn inside this DIV --></div>
-{% if type_choice == 'T' %}
-<div class="container" class="center-div2">
-    {% if type_choice == 'E' %}
-    <p>Votos a la encuesta: {{ question.question_text }}</p>
+    <div id="myDiv" class="center-div"><!-- Plotly chart will be drawn inside this DIV --></div>
+    {% if type_choice == 'T' %}
+    <div class="container" class="center-div2">
+        {% if type_choice == 'E' %}
+        <p>Votos a la encuesta: {{ question.question_text }}</p>
+        {% else %}
+        <p>Votos al test: {{ question.question_text }}</p>
+        {% endif %}
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Respuestas</th>
+                <th>Votos</th>
+            </tr>
+            </thead>
+            <tbody>
+
+
+            <tr>
+                <td>Respuestas Correctas</td>
+                <td>{{suma_true}}</td>
+            </tr>
+            <tr>
+                <td>Respuestas Incorrectas</td>
+                <td>{{ suma_wrong }}</td>
+            </tr>
+
+
+
+            <td align='right'><strong>Total: </strong></td>
+            <td> {{ sum }}</td>
+
+            </tr>
+
+            </tbody>
+        </table>
+        <a href="{% url 'polls:export_csv' question.id%}" ><button type="button"  class="btn btn-secondary  my-4">Descargar informe .csv</button></a>
+        <div class="container-fluid">
+        <div class="container card mt-md-4  text-black bg-light mb-3" >
+            <div class="row card-body ">
+
+<h2 class="text-center">Votos de los usuarios:</h2>
+<div class="container">
+  <table class="table table-borderless">
+                    {% for k,v in voters_list.items %}
+
+                       <thead><tr> <th>{{ k }}</th></tr></thead>
+    <tbody>
+                        {% for v in v.voters %}
+                      <tr><td>  {{ v }}</td></tr>
+                        {% endfor %}
+                        {% endfor %}
+                      </tbody>
+  </table>
+            </div>
+                </div>
+            </div>
+</div>
+
+        <a href="{% url 'polls:export_csv_test_result' question.id%}" ><button type="button"  class="btn btn-secondary  my-4">Descargar informe .csv</button></a>
+    </div>
     {% else %}
-    <p>Votos al test: {{ question.question_text }}</p>
+    <div class="container" class="center-div2">
+        {% if type_choice == 'E' %}
+        <p>Votos a la encuesta: {{ question.question_text }}</p>
+        {% else %}
+        <p>Votos al test: {{ question.question_text }}
+            {% endif %}
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Respuestas</th>
+                <th>Votos</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for key, value in choices.items %}
+            <tr>
+                <td>{{ key }}</td>
+                <td>{{ value }}</td>
+            </tr>
+            {% endfor %}
+
+
+            <td align='right'><strong>Total: </strong></td>
+            <td> {{ sum }}</td>
+
+            </tr>
+
+            </tbody>
+        </table>
+
+    </div>
+
+
+
+    <a href="{% url 'polls:export_csv' question.id%}" ><button type="button"  class="btn btn-secondary">Descargar informe .csv</button></a>
     {% endif %}
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <th>Respuestas</th>
-            <th>Votos</th>
-        </tr>
-        </thead>
-        <tbody>
 
-
-        <tr>
-            <td>Respuestas Correctas</td>
-            <td>{{suma_true}}</td>
-        </tr>
-        <tr>
-            <td>Respuestas Incorrectas</td>
-            <td>{{ suma_wrong }}</td>
-        </tr>
-
-
-
-        <td align='right'><strong>Total: </strong></td>
-        <td> {{ sum }}</td>
-
-        </tr>
-
-        </tbody>
-    </table>
-<a href="{% url 'polls:export_csv' question.id%}" ><button type="button"  class="btn btn-secondary">Descargar informe .csv</button></a>
-</div>
-{% else %}
-<div class="container" class="center-div2">
-     {% if type_choice == 'E' %}
-    <p>Votos a la encuesta: {{ question.question_text }}</p>
     {% else %}
-    <p>Votos al test: {{ question.question_text }}
+    <div class="alert alert-danger" role="alert">
+        <strong>Error!</strong> Aún no existen votos para esta pregunta
+    </div>
+
     {% endif %}
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <th>Respuestas</th>
-            <th>Votos</th>
-        </tr>
-        </thead>
-        <tbody>
 
-        {% for key, value in choices.items %}
-        <tr>
-            <td>{{ key }}</td>
-            <td>{{ value }}</td>
-        </tr>
-        {% endfor %}
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="http://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 
+    <script type="text/javascript">
 
-        <td align='right'><strong>Total: </strong></td>
-        <td> {{ sum }}</td>
-
-        </tr>
-
-        </tbody>
-    </table>
-
-</div>
-
-<a href="{% url 'polls:export_csv' question.id%}" ><button type="button"  class="btn btn-secondary">Descargar informe .csv</button></a>
-{% endif %}
-
-{% else %}
-<div class="alert alert-danger" role="alert">
-  <strong>Error!</strong> Aún no existen votos para esta pregunta
-</div>
-
-{% endif %}
-
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-<script src="http://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-
-<script type="text/javascript">
 
             {% if type_choice == 'T' %}
                     suma_false = {{sum}} - {{suma_true}};
@@ -224,5 +253,5 @@
   </script>
 
 
-</body>
-{% endblock %}
+    </body>
+    {% endblock %}

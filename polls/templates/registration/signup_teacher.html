@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load crispy_forms_tags %}
-<h2>¡Te damos la bienvenida, alumno!</h2>
+<h2>¡Te damos la bienvenida, profesor!</h2>
 <div class="row">
         <form method= "post">
             {% csrf_token %}
             {{form.as_p}}
+            {{profile_form.as_p}}
 
 
             <button type="submit">Registrarse</button>

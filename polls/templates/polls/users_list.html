@@ -10,17 +10,23 @@
     <table class="table table-striped">
         <thead>
         <tr>
-            <th>Usuarios Registrados:</th>
-            <th>(Esta por ver)</th>
+            <th>Alumnos Registrados:</th>
+            <th>Nombre y Correo: </th>
+            <th>Asignaturas: </th>
         </tr>
         </thead>
         <tbody>
 
 
-        {% for alumno in users_list %}
+        {% for key, value in datos_dic.items %}
         <tr>
-            <td>{{ alumno }}</td>
-            <td></td>
+            <td>{{ key }}</td>
+            <td>{{ value }}</td>
+            <td>
+                <li>{{ value }}</li>
+                <li>{{ value }}</li>
+            </td>
+
         </tr>
         {% endfor %}
 

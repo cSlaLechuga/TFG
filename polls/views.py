@@ -2,21 +2,25 @@ import logging, logging.config
 import sys
 # Create your views here.
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from .models import Choice, Question
+from .models import Choice, Question, Profile
 from django.shortcuts import get_object_or_404, render, redirect
 from django.template import loader
 from django.urls import reverse
-#from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User, Group
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.views import generic
 from rest_framework.decorators import api_view
 import csv
-from .forms import QuestionForm, ChoicesForm
+from .forms import QuestionForm, ChoicesForm, SignUpForm, ModelForm_Teacher
 from django.utils import timezone
 from django.forms import modelformset_factory
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.template.defaulttags import register
 
+@login_required
 def index(request):
     latest_question_list = Question.objects.order_by('-pub_date')
     choice_list= Choice.objects.order_by('word')
@@ -36,7 +40,7 @@ def detail(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     id_question=question.id
     print(f"El texto de la pregunta en cuestion es: {question.question_text}")
-    choices= dict()
+    choices= voters_list =dict()
     suma = 0
     suma_true=0
     type_choice=question.question_type
@@ -49,13 +53,28 @@ def detail(request, question_id):
             print(f"Numero de respuestas correctas: {question_list.votes}")
             suma_true = question_list.votes
         suma_wrong=suma-suma_true
-    return render(request, 'polls/detail.html', {'question': question,'choices' :choices,'sum': suma, 'type_choice': type_choice, 'suma_true': suma_true,'suma_wrong':suma_wrong})
+    #Ponerlo SOLO CUANDO SEA TEST
+    if question.question_type == 'T':
+        #Aqui procedemos a enviar a la plantilla un diccionario de listas con la gente que ha votado
+        for choice in question.choice_set.all():
+            voters = choice.who_voted
+            voters = voters.split(',')
+            if '' in voters:
+                voters.remove('')
+            elif ' ' in voters:
+                voters.remove(' ')
+
+            print(type(choice.choice_text))
+            voters_list[choice.choice_text] = {'voters':voters}
+
+        print(f"Lo que pasamos a la plantilla con preguntas y votantes: {voters_list}")
+    return render(request, 'polls/detail.html', {'question': question,'choices' :choices,'sum': suma, 'type_choice': type_choice, 'suma_true': suma_true,'suma_wrong':suma_wrong,'voters_list': voters_list})
 
 #def results(request, question_id):
  #   question = get_object_or_404(Question, pk=question_id)
   #  return render(request, 'polls/results.html', {'question': question})
-
-
+@login_required
+@user_passes_test(lambda u: u.groups.filter(name='Profesores').count() == 0)
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     print(f"request {request}")
@@ -79,6 +98,25 @@ def vote(request, question_id):
         })
     else:
         selected_choice.votes += 1
+        if question.question_type == 'T':
+            profile = get_object_or_404(Profile, pk=request.user.pk)
+            print(f"El usuario que ha votado es: {profile.nombre + ' ' + profile.apellido}")
+            who_voted = ''
+            if selected_choice.who_voted is None:
+                who_voted = ''
+                who_voted = profile.nombre + ' ' + profile.apellido
+            else:
+                who_voted = selected_choice.who_voted
+                who_voted =who_voted +  ','+ profile.nombre + ' ' + profile.apellido
+            selected_choice.who_voted = who_voted
+            selected_choice.save()
+            print(f"Listado de usuarios que han votado: {who_voted}")
+
+            profile.total_votes += 1
+            profile.save()
+            if selected_choice.is_correct_answer:
+                profile.total_votes_OK += 1
+                profile.save()
         selected_choice.save()
         # Always return an HttpResponseRedirect after successfully dealing
         # with POST data. This prevents data from being posted twice if a
@@ -94,7 +132,7 @@ def signup(request):
             return redirect('polls:index')
     else:
         form = UserCreationForm()
-    return render(request, 'registration/signup.html',{
+    return render(request, 'registration/signup_teacher.html',{
         'form': form
     })
 
@@ -124,9 +162,6 @@ class ChartData(APIView):
 
 
 def export_csv(request,question_id):
-
-
-
     question_object = get_object_or_404(Question, pk=question_id)
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename= "Resultados: ' + question_object.question_text + '.csv"'
@@ -221,10 +256,13 @@ def results(request):
     users = User.objects.values_list('username',flat= True)
     user_list= []
     user_count = 0
+
     for user in users:
-        print(user)
-        user_list.append(user)
-        user_count +=1
+        profile=User.objects.get(username=user)
+        if profile.is_staff == False:
+            print(user)
+            user_list.append(profile)
+            user_count +=1
 
 
     return render(request, 'polls/results.html', {'user_list': user_list,'user_count': user_count})
@@ -233,8 +271,140 @@ def users_list(request):
     users = User.objects.values_list('username',flat= True)
     user_list= []
     user_count = 0
+    datos_dic = is_student_dic =dict()
     for user in users:
-        print(user)
-        user_list.append(user)
-        user_count +=1
-    return render(request, 'polls/users_list.html',{'users_list': user_list,'user_count': user_count})
+        u = User.objects.get(username=user)
+        if u.is_staff == False:
+            datos_dic[user] = u.first_name + " " + u.last_name
+            user_list.append(user)
+            user_count += 1
+
+    return render(request, 'polls/users_list.html',{'users_list': user_list,'user_count': user_count,'datos_dic':datos_dic})
+
+def signup_teacher(request):
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        profile_form = ModelForm_Teacher(request.POST)
+        if form.is_valid() and profile_form.is_valid():
+            user = form.save()
+            profile = profile_form.save(commit=False)
+
+            profile.user = user
+            profile.despacho = profile_form.cleaned_data['despacho']
+            profile.save()
+            user.refresh_from_db()  # load the profile instance created by the signal
+            user.first_name = form.cleaned_data.get('nombre')
+            user.last_name = form.cleaned_data.get('apellido')
+            user.email = form.cleaned_data.get('email')
+
+            user.is_staff = True
+            user.save()
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=user.username, password=raw_password)
+            login(request, user)
+            print(user)
+            g = Group.objects.get(name='Profesores')
+            g.user_set.add(user)
+            return redirect('polls:index')
+    else:
+        form = SignUpForm()
+        profile_form = ModelForm_Teacher()
+
+    return render(request, 'registration/signup_teacher.html', {'form': form, 'profile_form': profile_form})
+
+
+def signup_student(request):
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+      #  profile_form = ModelForm_Student(request.POST)
+        #if form.is_valid() and profile_form.is_valid():
+        if form.is_valid():
+            user = form.save()
+       #     profile = profile_form.save(commit=False)
+
+        #    profile.user = user
+        #    profile.save()
+            user.refresh_from_db()  # load the profile instance created by the signal
+            user.first_name = form.cleaned_data.get('nombre')
+            user.last_name = form.cleaned_data.get('apellido')
+            user.email = form.cleaned_data.get('email')
+
+            user.is_staff = False
+            user.save()
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=user.username, password=raw_password)
+            login(request, user)
+            print(user)
+            g = Group.objects.get(name='Alumnos')
+            g.user_set.add(user)
+            return redirect('polls:index')
+    else:
+        form = SignUpForm()
+        #profile_form = ModelForm_Student()
+
+    #return render(request, 'registration/signup_teacher.html', {'form': form, 'profile_form': profile_form})
+    return render(request, 'registration/signup_teacher.html', {'form': form})
+
+@register.filter
+def get_item(dictionary, key):
+    print(dictionary.get(key))
+    return dictionary.get(key)
+
+def results_asignaturas(request):
+    return render(request, 'polls/results_asignaturas.html')
+
+def student_progress(request):
+    students_progress= dict()
+    # students_progress= dict()
+    #     # students_progress={'Carlos Lechuga_1':{'votes_fail': 2,'votes_ok': 3}}
+    #     # student_progress.append({'Carlos Lechuga_2':{'votes_fail': 3,'votes_ok': 4}})
+    profiles = Profile.objects.all()
+    print(profiles)
+    for p in profiles:
+        if p.user.is_staff == False:
+            total_votes_FAIL= p.total_votes - p.total_votes_OK
+            students_progress[p.nombre + " " + p.apellido ] = {'votes_FAIL': total_votes_FAIL,'votes_OK':p.total_votes_OK}
+
+    print(f"Diccionario que pasamos: {students_progress}")
+    return render(request, 'polls/student_progress.html',{'students_progress' : students_progress })
+
+def export_csv_students(request):
+    question_object = get_object_or_404(Profile, pk=request.user)
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename= "Resultado_global_tests_alumnos.csv"'
+    writer = csv.writer(response, delimiter=';', dialect='excel')
+
+
+
+    writer.writerow(['Nombre de Usuario', 'Nombre completo', 'Respuestas Correctas', 'Respuestas Incorrectas'])
+    profiles=Profile.objects.all()
+    for profile in profiles:
+        if profile.user.is_staff == False:
+            total_votes_FAIL = profile.total_votes - profile.total_votes_OK
+            writer.writerow([profile.user.username,profile.nombre+" "+profile.apellido ,profile.total_votes_OK, total_votes_FAIL])
+
+    return response
+
+def export_csv_test_result(request, question_id):
+    question_object = get_object_or_404(Question, pk=question_id)
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename= ' + question_object.question_text + 'votos_alumnos.csv'
+    writer = csv.writer(response, delimiter=';', dialect='excel')
+    print(f"Todas las respuestas: {question_object.choice_set.all()}")
+    for choice in question_object.choice_set.all():
+        print(choice.choice_text)
+        writer.writerow([choice.choice_text])
+        who_voted= ''.join(choice.who_voted)
+        voters_list = who_voted.split(',')
+        if '' in voters_list:
+            voters_list.remove('')
+        elif ' ' in voters_list:
+            voters_list.remove(' ')
+        print(f"Voters: {voters_list}")
+        for voters in voters_list:
+            print(voters)
+            writer.writerow([voters])
+        writer.writerow([' '])
+
+
+    return response

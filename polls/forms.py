@@ -1,11 +1,12 @@
 from django import forms
-from .models import Question, Choice
+from .models import Question, Choice, Profile, User
+from django.contrib.auth.forms import UserCreationForm
 from crispy_forms.helper import FormHelper
 from django.db import transaction
 from django.forms import ModelForm
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit,Div, Row, Column
 from crispy_forms.bootstrap import Accordion, AccordionGroup, Field
-from .models import Alumno
+
 
 class QuestionForm(forms.ModelForm):
 
@@ -61,4 +62,26 @@ class ChoicesForm(forms.ModelForm):
         fields = ('choice_text', 'is_correct_answer')
 
 
+class SignUpForm(UserCreationForm):
+   nombre = forms.CharField(max_length=100)
+   apellido = forms.CharField(max_length=100)
+   email= forms.EmailField(max_length=20)
 
+
+   class Meta:
+       model= User
+       fields = ('username', 'email','nombre','apellido' , 'password1', 'password2',)
+
+
+class ModelForm_Teacher(forms.ModelForm):
+   despacho = forms.CharField(max_length=10)
+
+
+   class Meta:
+       model= Profile
+       fields = ('despacho',)
+
+# class ModelForm_Student(forms.ModelForm):
+#
+#     class Meta:
+#         model = Profile
