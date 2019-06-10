@@ -133,5 +133,6 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 STATIC_URL = '/static/'
 LOGIN_REDIRECT_URL = 'polls:index'
 LOGOUT_REDIRECT_URL = 'polls:index'
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
+EMAIL_BACKEND = 'django_mailjet.backends.MailjetBackend'
+MAILJET_API_KEY = 'f4ca6867ac438a683c3df64c2e4de916'
+MAILJET_API_SECRET = '0eb8617c5843d0878ba1a02f10616bcf'

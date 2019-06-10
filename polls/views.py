@@ -22,6 +22,9 @@ from django.template.defaulttags import register
 from .filters import ChoiceFilter
 from .utils import render_to_pdf
 from django.template.loader import get_template
+from mailjet_rest import Client
+from django.conf import settings
+import os
 
 
 @login_required
@@ -583,3 +586,56 @@ def modify_answer(request,question_id):
 
     form = choiceFormset( instance = question)
     return render(request, 'polls/create_answer.html', {'form': form})
+
+def users_list_staff(request):
+    users = User.objects.values_list('username',flat= True)
+    user_list= []
+    user_count = 0
+    datos_dic = is_student_dic =dict()
+    for user in users:
+        u = User.objects.get(username=user)
+        if u.is_staff == True:
+            datos_dic[user] = {"name": u.profile.nombre + " " + u.profile.apellido,"email": u.email,"subjects": u.profile.asignaturas.values_list('nombre',flat= True)}
+            user_list.append(user)
+            user_count += 1
+
+    return render(request, 'polls/users_list_staff.html',{'users_list': user_list,'user_count': user_count,'datos_dic':datos_dic})
+
+
+def send_email(request,username):
+    print(username)
+    print(request.user)
+    from_user = User.objects.get(username = username)
+    to_user = User.objects.get(username = username)
+    print(to_user.email)
+    api_key = getattr(settings, "MAILJET_API_KEY", None)
+    api_secret = getattr(settings, "MAILJET_API_SECRET", None)
+
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+    data = {
+        'Messages': [
+            {
+                "From": {
+                    "Email": "app.encuestas.uah@gmail.com",
+                    "Name": "App de Encuestas"
+                },
+                "To": [
+                    {
+                        "Email": to_user.email,
+                        "Name": "passenger 1"
+                    }
+                ],
+                "Subject": "Solicitud de tutoría",
+                "TextPart": "Mensaje generado automáticamente por Aplicación de Encuestas UAH",
+                "HTMLPart": "<h3>Hola, mi nombre es " + from_user.profile.nombre + " " + from_user.profile.apellido + " y escribo para solicitar una tutoría. En caso de que sea posible favor de escribirme a mi correo: "+ from_user.email + " para concretar fecha y hora</h3><br />Muchas gracias de antemano!"
+            }
+        ]
+    }
+    result = mailjet.send.create(data=data)
+    print(result.status_code)
+
+    print(result.json())
+    return redirect('/polls/results/users_list_staff/')
+
+
+

@@ -25,6 +25,9 @@ urlpatterns = [
     path('<uuid:question_id>/pdf/', views.GeneratePDF, name='GeneratePDF'),
     path('<uuid:question_id>/modify_question/', views.modify_question, name='modify_question'),
     path('<uuid:question_id>/modify_answer/', views.modify_answer, name='modify_answer'),
+    path('results/users_list_staff/', views.users_list_staff, name= 'users_list_staff'),
+    path('results/<str:username>/send_email/', views.send_email, name= 'send_email'),
+
 
     #path('<uuid:question_id>/api/chart/data/', views.ChartData.as_view(), name='api-chart-data')
 

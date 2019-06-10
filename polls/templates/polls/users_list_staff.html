@@ -1,10 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block content %}
+<style>
+.center-div2{
+    li::before {content: "•"; color: black;
+  display: inline-block; width: 1em;
+  margin-left: -1em}
+}
+</style>
 
-</body>
-</html>
+<div class="container" class="center-div2">
+
+    <p>Lista de profesores</p>
+
+
+
+    <table class="table table-striped center-div2">
+        <thead>
+        <tr>
+
+            <th>Nombre y Correo: </th>
+            <th>Asignaturas: </th>
+            <th>Contactar:</th>
+        </tr>
+        </thead>
+
+
+
+        {% for key, value in datos_dic.items %}
+
+
+            <td><li><strong>Nombre:</strong> {{ value.name }}</li><br><li><strong>Email:</strong> {{ value.email }}</li></td>
+            <td>
+                {% for items in value.subjects%}
+                <li>{{ items }}</li>
+                {% endfor %}
+
+            </td>
+            <td><a href="{% url 'polls:send_email' key %}"><button type="button" class="btn btn-success my-center">Solicitar tutoría</button></a></td>
+        </tr>
+        {% endfor %}
+
+
+
+
+
+
+        </tbody>
+    </table>
+
+</div>
+
+
+{% endblock %}
