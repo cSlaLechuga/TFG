@@ -23,7 +23,7 @@ class Departamento(models.Model):
 
 
 class Asignaturas(models.Model):
-    nombre= models.CharField(max_length=200, help_text="Asignatura")
+    nombre= models.TextField(max_length=200, help_text="Asignatura")
     codigo= models.CharField(max_length=10, help_text="Codigo de la asignatura")
     departamento= models.ForeignKey(Departamento, on_delete=models.CASCADE)
     #alumnos= models.ManyToManyField()
@@ -37,6 +37,8 @@ class Question(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, help_text="Identificador unico de la pregunta")
     pub_date = models.DateTimeField(auto_now_add=True)
     asignatura= models.ForeignKey(Asignaturas,on_delete=models.CASCADE)
+    creator = models.CharField(max_length=200, null=True, blank=True)
+    n_choices = models.IntegerField(null=True, blank=True)
 
     ENCUESTA = 'E'
     TEST = 'T'

@@ -1,10 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block content %}
+{% if questions_dic %}
 
-</body>
-</html>
+{% for k,v in questions_dic.items %}
+<div class="container card mt-md-m3 card-block w-50 my-4 ">
+
+
+
+    <div class=" p-4">
+    <a class="p-4 font-weight-bold text-left" href="{% url 'polls:detail' k.id%}">
+        {{k}}
+    </a>
+        <button type="button" class="btn btn-warning  text-right ">Modificar</button>
+        <button type="button" class="btn btn-danger text-right" data-toggle="modal" data-target="#MyModal">Eliminar</button>
+    </div>
+    <p>{{v.votes}} voto(s) en total</p>
+    <p class="text-muted">Fecha de creación: {{v.pub_date}}</p>
+<div id="MyModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">Aviso</div>
+            <div class="modal-body">La pregunta será borrada permanentemente y no podrá ser recuperada en un futuro.¿Está seguro que quiere eliminar la pregunta?</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-dismiss="modal">No</button>
+                <a class="btn btn-danger" role="button" href="{% url 'polls:delete_question' k.id %}" >Si, estoy seguro</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+{% endfor %}
+{% else %}
+
+<div class="alert alert-danger" role="alert">
+    <strong>Error!</strong> No ha creado preguntas o encuestas
+</div>
+{% endif %}
+
+
+{% endblock %}

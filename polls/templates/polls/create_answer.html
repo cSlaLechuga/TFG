@@ -1,19 +1,36 @@
 {% extends 'base.html' %}
+{% load crispy_forms_tags %}
 {% block content %}
+<style>
+    .card {
+        margin: 0 auto; /* Added */
+        float: none; /* Added */
+        margin-bottom: 10px; /* Added */
+}
+</style>
 
 
- <br>
-<h2>Paso 2: Crear Respuestas a la pregunta {{question_text}}</h2>
-<form method="POST" class="post-form">{% csrf_token %}
-    <br>
 
-{{ form.as_table }}
-    <br>
-    <br>
+<div class="card card-block text-center w-50 my-4">
+    <div class="card-header">
+        <h5 class="card-title my-2">Paso 2: Crear Respuesta </h5>
+    </div>
+    <div class="card-body">
+        <form method="post" novalidate>
+  {% csrf_token %}
+                {{ form|crispy }}
 
-    <br><br>
-    <button type="submit" class="btn btn-success">Guardar</button>
-</form>
+
+          <button class="my-4 btn btn-primary" type="submit">Crear Respuesta(s)</button>
+        </form>
+    </div>
+</div>
+</div>
+
+<tr><th>Comment:</th><td><input type="text" name="comment" size="15" required></td></tr>
+
+</div>
 
 
 {% endblock %}
+

@@ -1,27 +1,72 @@
 {% extends 'base.html' %}
-
-{% load crispy_forms_tags %}
-{% crispy choice_form formset.form.helper %}
-{% crispy form form.helper %}
+{% load widget_tweaks %}
 {% block content %}
+<style>
+    .card {
+        margin: 0 auto; /* Added */
+        float: none; /* Added */
+        margin-bottom: 10px; /* Added */
+}
+</style>
 
 
 
-
-<div class="card">
+<div class="card card-block text-center w-50 my-4">
     <div class="card-header">
-        <h2>Crear Pregunta</h2>
+        <h5 class="card-title my-2">Paso 1: Crear Pregunta </h5>
     </div>
     <div class="card-body">
-        <form class="form-inline" method="POST" action="{% url 'polls:post_question' %}" class="post-form">{% csrf_token %}
-            {% crispy form %}
-            <div class="mx-auto" style="width: 600px;">
-                {{choice_form|crispy}}
+        <form method="post" novalidate>
+  {% csrf_token %}
+  {% for hidden_field in form.hidden_fields %}
+    {{ hidden_field }}
+  {% endfor %}
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger" role="alert">
+      {% for error in form.non_field_errors %}
+        {{ error }}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% for field in form.visible_fields %}
+    <div class="form-group">
+      {{ field.label_tag }}
+
+      {% if form.is_bound %}
+        {% if field.errors %}
+          {% render_field field class="form-control is-invalid" %}
+          {% for error in field.errors %}
+            <div class="invalid-feedback">
+              {{ error }}
             </div>
-            <button type="submit" class="btn btn-success">Guardar</button>
+          {% endfor %}
+        {% else %}
+          {% render_field field class="form-control is-valid" %}
+        {% endif %}
+      {% else %}
+        {% render_field field class="form-control" %}
+      {% endif %}
+
+      {% if field.help_text %}
+        <small class="form-text text-muted">{{ field.help_text }}</small>
+      {% endif %}
+    </div>
+  {% endfor %}
+        <br>
+
+          <button class="my-4 btn btn-primary" type="submit">Submit</button>
         </form>
     </div>
 </div>
+</div>
+
+<tr><th>Comment:</th><td><input type="text" name="comment" size="15" required></td></tr>
+
+</div>
 
 
-{% endblock %}
+
+
+        {% endblock %}
