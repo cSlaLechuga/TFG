@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% block content %}
-{% if latest_question_list %}
+{% load crispy_forms_tags %}
+{% if latest_question_list_test or latest_question_list_poll %}
 <style type="text/css">
 .center-div
 {
-
 margin: auto;
 top: 0;
 right: 0;
@@ -15,9 +15,9 @@ max-height: 500px;
 border-radius: 3px;
 }
 </style>
-
+{% if latest_question_list_test %}
 <ul>
-    {% for question in latest_question_list %}
+    {% for question in latest_question_list_test %}
     <div class="container card mt-md-4">
         <div class="row card-body">
             <div  class="center-div">
@@ -29,7 +29,7 @@ border-radius: 3px;
                     <label for="choice{{ forloop.counter }}" align="middle">{{ choice.choice_text }}</label><br>
 
                     {% endfor %}
-                    <input type="submit" class="btn btn-primary" value="Votar">
+                    <input type="submit" class="btn btn-primary" value="Responder">
                 </form>
             </div>
         </div>
@@ -37,6 +37,57 @@ border-radius: 3px;
     {% endfor %}
 
 </ul>
+{% endif %}
+
+{% if latest_question_list_poll %}
+<ul>
+    {% for question in latest_question_list_poll %}
+    <div class="container card mt-md-4">
+        <div class="row card-body">
+            <div  class="center-div">
+                <li><a class="font-weight-bold" href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
+                <form id="{{ choice.choice_id}}" action="{% url 'polls:vote' question.id %}" method="post">
+                    {% csrf_token %}
+                    {% for choice in question.choice_set.all %}
+                    <input type="radio" name="choice" id="choice{{ forloop.counter}}" value="{{ choice.choice_id }}" align="middle">
+                    <label for="choice{{ forloop.counter }}" align="middle">{{ choice.choice_text }}</label><br>
+
+                    {% endfor %}
+                    <input type="submit" class="btn btn-primary" value="Responder">
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+</ul>
+{% endif %}
+
+
+{% if TextFormset_dict %}
+<ul>
+    {% for k,v in TextFormset_dict.items %}
+    <div class="container card mt-md-4">
+        <div class="row card-body">
+            <div  class="center-div">
+                <li><a class="font-weight-bold" href="{% url 'polls:detail_answer_input' k %}">{{ k }}</a></li>
+                <form id="{{choice.choice_id}}" action="{% url 'polls:save_answer_input' k %}" method="post">
+                    {% csrf_token %}
+                    <br>
+                    {{ v|crispy }}
+
+
+                        <br>
+                    <input type="submit" class="btn btn-primary" value="Responder" align="middle" >
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+</ul>
+{% endif %}
+
 {% else %}
 <div class="alert alert-danger" role="alert">
     <strong>Error!</strong> No existen preguntas

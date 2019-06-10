@@ -39,12 +39,15 @@ class Question(models.Model):
     asignatura= models.ForeignKey(Asignaturas,on_delete=models.CASCADE)
     creator = models.CharField(max_length=200, null=True, blank=True)
     n_choices = models.IntegerField(null=True, blank=True)
+    total_votes = models.IntegerField(null=True, blank=True)
 
     ENCUESTA = 'E'
     TEST = 'T'
+    DESARROLLO = 'D'
     QUESTION_TYPE = (
         (ENCUESTA, 'Encuesta'),
         (TEST, 'Tipo Test'),
+        (DESARROLLO, 'Desarrollo'),
     )
     question_type = models.CharField(
         max_length=1,
@@ -62,14 +65,18 @@ class Question(models.Model):
 
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    choice_text = models.CharField(max_length=200)
+    choice_text = models.CharField(max_length=200,null=True, blank=True)
+    text_type_choice_text = models.TextField(max_length=1000,null=True, blank=True)
     votes = models.IntegerField(default=0)
     choice_id = models.UUIDField(primary_key=True, default=uuid.uuid1, help_text="Identificador unico de la respuesta")
     is_correct_answer = models.BooleanField(default=False)
     who_voted = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return self.choice_text
+        if self.text_type_choice_text:
+
+            return self.text_type_choice_text
+        return str(self.choice_text)
 
 
 

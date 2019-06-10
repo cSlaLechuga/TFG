@@ -9,11 +9,9 @@
         <a class="nav-link active" href="#">Alumnos</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="{% url 'polls:results_asignaturas' %}">Asignaturas</a>
+        <a class="nav-link" href="{% url 'polls:results_asignaturas' %}">Mis Preguntas</a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link " href="#">Disabled</a>
-      </li>
+
     </ul>
   </div>
   <div class="card-body">
@@ -21,6 +19,7 @@
 <div class="row">
   <div class="col-sm-6">
     <div class="card">
+      <img class="card-img-top" width="42" height="350" src="https://pixabay.com/get/54e5d044495baa14ea9d857fc02a32791638c3e4565771497d2e7ad595/people-2557396.jpg" alt="Card image cap">
       <div class="card-body">
         <h5 class="card-title">Información de Alumnos</h5>
         <p class="card-text">Actualmente hay {{user_count}} usuarios registrados en la aplicación</p>
@@ -30,6 +29,7 @@
   </div>
   <div class="col-sm-6">
     <div class="card">
+      <img class="card-img-top" width="42" height="350" src="https://pixabay.com/get/57e7d4474851ac14ea9d857fc02a32791638c3e4565771497d2e78dc97/graphic-1714230.png" alt="Card image cap">
       <div class="card-body">
         <h5 class="card-title">Rendimiento Alumnos</h5>
         <p class="card-text">Ver progreso de los alumnos en los tests realizados</p>

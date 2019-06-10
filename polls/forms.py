@@ -185,4 +185,30 @@ class ChoicesForm_T(forms.ModelForm):
 
 
 
+class Input_Answer(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+
+
+        super(Input_Answer, self).__init__(*args, **kwargs)
+
+        self.fields['text_type_choice_text'].label = ""
+        self.fields['text_type_choice_text'].required = True
+
+
+
+
+
+    def clean(self):
+        cleaned_data = super(Input_Answer, self).clean()
+
+        text_type_choice_text = cleaned_data.get('text_type_choice_text')
+
+
+        if not text_type_choice_text:
+            raise forms.ValidationError('¡Cada pregunta debe tener una o mas respuestas!')
+
+    class Meta:
+        model = Choice
+        fields = ('text_type_choice_text',)
 

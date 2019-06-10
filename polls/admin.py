@@ -15,7 +15,7 @@ class ChoiceInLine(admin.TabularInline):
     extra = 3
     list_display = ('choice_text', 'votes', 'id')
     if Question.question_type =='Tipo Test':
-        list_display = ('choice_text', 'votes', 'id','is_correct_answer')
+        list_display = ('choice_text', 'votes', 'id','is_correct_answer','text_type_choice_text')
 
 
 class QuestionAdmin(admin.ModelAdmin):

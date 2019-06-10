@@ -1,10 +1,69 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block content %}
+{% load crispy_forms_tags %}
 
-</body>
-</html>
+{% if filter %}
+<div class="card my-4 mx-4 bg-light ">
+
+  <div class="card-body">
+      <h5 class="card-title">Filtro</h5>
+<form method="get">
+    {{ filter.form|crispy }}
+    <button type="submit" class="btn btn-success">Filtrar</button>
+</form>
+  </div>
+</div>
+
+{% for question in filter.qs %}
+<div class="container card mt-md-m3 card-block w-50 my-4 ">
+    <div class=" p-4">
+        {% if question.question_type == 'D' %}
+                <a class="p-4 font-weight-bold text-left" href="{% url 'polls:detail_answer_input' question.question_text %}">
+            {{ question }}
+
+        </a>
+       {% else %}
+        <a class="p-4 font-weight-bold text-left" href="{% url 'polls:detail' question.id %}">
+            {{ question }}
+
+        </a>
+         {% endif %}
+        <a href="{% url 'polls:modify_question' question.id %}">
+                <button type="button" class="btn btn-warning  text-right " >Modificar</button></a>
+        <button type="button" class="btn btn-danger text-right" data-toggle="modal" data-target="#MyModal">Eliminar</button>
+    </div>
+    {% if question.question_type == 'E' or question.question_type == 'T' %}
+        <p> {{ question.total_votes }} voto(s) en total</p>
+    {% else %}
+    {% if question.total_votes > 1 %}
+    <p>Respondida {{ question.total_votes }} veces</p>
+    {% else %}
+        <p>Respondida {{ question.total_votes }} vez</p>
+    {% endif %}
+    {% endif %}
+    <p class="text-muted">Fecha de creación: {{question.pub_date}}</p>
+    <div id="MyModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">Aviso</div>
+            <div class="modal-body">La pregunta será borrada permanentemente y no podrá ser recuperada en un futuro.¿Está seguro que quiere eliminar la pregunta?</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-dismiss="modal">No</button>
+                <a class="btn btn-danger" role="button" href="{% url 'polls:delete_question' question.id %}" >Si, estoy seguro</a>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endfor %}
+
+
+{% else %}
+
+<div class="alert alert-danger" role="alert">
+    <strong>Error!</strong> No ha creado preguntas o encuestas
+</div>
+{% endif %}
+
+{% endblock %}
+

@@ -13,19 +13,28 @@ from rest_framework.views import APIView
 from django.views import generic
 from rest_framework.decorators import api_view
 import csv
-from .forms import QuestionForm, ChoicesForm, SignUpForm, ModelForm_Teacher, inlineformset_factory, ChoicesForm_T, ChoicesForm_E
+from .forms import QuestionForm, ChoicesForm, SignUpForm, ModelForm_Teacher, inlineformset_factory, ChoicesForm_T, ChoicesForm_E, Input_Answer
 from django.utils import timezone
 from django.forms import modelformset_factory
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.template.defaulttags import register
+from .filters import ChoiceFilter
+from .utils import render_to_pdf
+from django.template.loader import get_template
 
 
 @login_required
 def index(request):
-    latest_question_list = Question.objects.order_by('-pub_date')
+    TextFormset_dict = dict()
+    latest_question_list_text_type = Question.objects.filter(question_type = 'D')
+    for list_text_type in latest_question_list_text_type:
+        TextFormset_dict[list_text_type] = Input_Answer()
+
+    latest_question_list_poll = Question.objects.filter(question_type = 'E')
+    latest_question_list_test = Question.objects.filter(question_type = 'T')
     choice_list= Choice.objects.order_by('word')
-    context = {'latest_question_list': latest_question_list, 'choice_list': choice_list}
+    context = {'latest_question_list_test': latest_question_list_test, 'latest_question_list_poll': latest_question_list_poll,'TextFormset_dict': TextFormset_dict, 'choice_list': choice_list}
     return render(request, 'polls/index.html', context)
 
 #class DetailView(generic.ListView):
@@ -43,7 +52,8 @@ def detail(request, question_id):
     print(f"El texto de la pregunta en cuestion es: {question.question_text}")
     choices= voters_list =dict()
     suma = 0
-    suma_true=0
+    suma_true = suma_wrong = 0
+    list_voters = []
     type_choice=question.question_type
     print(type_choice)
 
@@ -59,16 +69,18 @@ def detail(request, question_id):
         #Aqui procedemos a enviar a la plantilla un diccionario de listas con la gente que ha votado
         for choice in question.choice_set.all():
             voters = choice.who_voted
-            voters = voters.split(',')
-            if '' in voters:
-                voters.remove('')
-            elif ' ' in voters:
-                voters.remove(' ')
+            if voters != None:
+                voters = voters.split(',')
+                if '' in voters:
+                    voters.remove('')
+                elif ' ' in voters:
+                    voters.remove(' ')
 
             print(type(choice.choice_text))
             voters_list[choice.choice_text] = {'voters':voters}
+            print(f"Lo que pasamos a la plantilla con preguntas y votantes: {voters_list}")
 
-        print(f"Lo que pasamos a la plantilla con preguntas y votantes: {voters_list}")
+
     return render(request, 'polls/detail.html', {'question': question,'choices' :choices,'sum': suma, 'type_choice': type_choice, 'suma_true': suma_true,'suma_wrong':suma_wrong,'voters_list': voters_list})
 
 #def results(request, question_id):
@@ -78,6 +90,15 @@ def detail(request, question_id):
 @user_passes_test(lambda u: u.groups.filter(name='Profesores').count() == 0)
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
+    if question.question_type == 'D':
+        if request.method == 'POST':
+            form = Input_Answer(request.POST, instance=question)
+            if form.is_valid():
+                form.save()
+                return HttpResponseRedirect(reverse('polls:index'))
+
+
+
     print(f"request {request}")
     print(f"request.POST {request.POST}")
     pk = request.POST['choice']
@@ -253,7 +274,8 @@ def post_answer(request,question_id):
         choiceFormset = inlineformset_factory(Question, Choice, form=ChoicesForm_T, extra=question.n_choices)
     elif question.question_type == 'E':
         choiceFormset = inlineformset_factory(Question, Choice, form=ChoicesForm_E, extra=question.n_choices)
-
+    elif question.question_type == 'D':
+        return HttpResponseRedirect(reverse('polls:index'))
 
     if request.method == 'POST':
         form = choiceFormset(request.POST, instance = question)
@@ -404,19 +426,20 @@ def export_csv_test_result(request, question_id):
     writer = csv.writer(response, delimiter=';', dialect='excel')
     print(f"Todas las respuestas: {question_object.choice_set.all()}")
     for choice in question_object.choice_set.all():
-        print(choice.choice_text)
-        writer.writerow([choice.choice_text])
-        who_voted = ''.join(choice.who_voted)
-        voters_list = who_voted.split(',')
-        if '' in voters_list:
-            voters_list.remove('')
-        elif ' ' in voters_list:
-            voters_list.remove(' ')
-        print(f"Voters: {voters_list}")
-        for voters in voters_list:
-            print(voters)
-            writer.writerow([voters])
-        writer.writerow([' '])
+        if choice.who_voted != None:
+            print(choice.choice_text)
+            writer.writerow([choice.choice_text])
+            who_voted = ''.join(choice.who_voted)
+            voters_list = who_voted.split(',')
+            if '' in voters_list:
+                voters_list.remove('')
+            elif ' ' in voters_list:
+                voters_list.remove(' ')
+            print(f"Voters: {voters_list}")
+            for voters in voters_list:
+                print(voters)
+                writer.writerow([voters])
+            writer.writerow([' '])
 
 
     return response
@@ -445,10 +468,118 @@ def delete_question(request,question_id):
 
     Question.objects.filter(id=question_id).delete()
     print("La pregunta ha sido borrada de la base de datos")
-    #volcemos a la pagina
+    #volvemos a la pagina
 
     department = request.user.profile.departamento
     print(request.user.profile.departamento) #Nos aseguramos de que el profesor solo pueda ver las asignaturas de su departamento
     subjects = Asignaturas.objects.filter(departamento = request.user.profile.departamento)
     questions_created= Question.objects.filter(creator = request.user.username)
-    return HttpResponseRedirect(reverse('polls:questions_list'))
+    return redirect('/polls/questions_list/')
+
+
+def save_answer_input(request,question_text):
+    question = Question.objects.get(question_text= question_text)
+    profile = get_object_or_404(Profile, pk=request.user.pk)
+    if request.method == 'POST':
+
+        form = Input_Answer(request.POST, instance = question)
+        if form.is_valid():
+            choice = Choice.objects.create(question= question)
+            choice.save()
+            choice.text_type_choice_text = form.cleaned_data.get('text_type_choice_text')
+            choice.save()
+            if choice.who_voted is None:
+                who_voted = ''
+                who_voted = profile.nombre + ' ' + profile.apellido
+            choice.who_voted = who_voted
+            choice.save()
+            choice.votes = +1
+            choice.save()
+    return HttpResponseRedirect(reverse('polls:index'))
+
+def detail_answer_input(request, question_text):
+    answer_list = answer_list_context = []
+
+    question = Question.objects.get(question_text=question_text)
+
+    # for answer in question.choice_set.all():
+    #     answer_list_context[answer.who_voted] = {'text':answer.text_type_choice_text}
+
+    return render(request, 'polls/detail_text_questions.html', {'question': question})
+
+def search(request):
+    department = request.user.profile.departamento
+    print(request.user.profile.departamento) #Nos aseguramos de que el profesor solo pueda ver las asignaturas de su departamento
+    subjects = Asignaturas.objects.filter(departamento = request.user.profile.departamento)
+    questions_list= Question.objects.filter(creator = request.user.username)
+
+    question_filter = ChoiceFilter(request.GET, queryset=questions_list)
+
+    #We must update the number of votes
+    all_questions= Question.objects.all()
+
+    for questions in all_questions:
+        total_votes = 0
+        for choice_list in questions.choice_set.all():
+            total_votes += choice_list.votes
+        questions.total_votes = total_votes
+        questions.save()
+    return render(request, 'polls/choice_list.html', {'filter': question_filter})
+
+
+
+def GeneratePDF(request,question_id):
+    question = Question.objects.get(pk= question_id)
+    answers = question.choice_set.all()
+
+    template = get_template('pdf_template.html')
+    context = {
+        "question" : question,
+        "answers" : answers,
+    }
+    pdf = render_to_pdf('pdf_template.html',context)
+    return HttpResponse(pdf, content_type='application/pdf')
+
+
+def modify_question(request, question_id):
+    question = get_object_or_404(Question, pk= question_id)
+    #form = QuestionForm(instance=question)
+    if request.method == 'POST':
+        form = QuestionForm(request.POST,instance=question)
+
+        if form.is_valid():
+            post = form.save(commit=False)
+            question_id = post.id
+            post.creator = str(User.objects.get(username=request.user))
+            post.save()
+
+
+
+            return redirect('polls:post_answer', question_id = question_id)
+
+
+    else:
+        question = get_object_or_404(Question, pk=question_id)
+        form = QuestionForm(instance= question)
+
+
+    return render(request,'polls/create_question.html', {'form': form})
+
+
+def modify_answer(request,question_id):
+    question = Question.objects.get(pk=question_id)
+    if question.question_type == 'T':
+        choiceFormset = inlineformset_factory(Question, Choice, form=ChoicesForm_T, extra=question.n_choices)
+    elif question.question_type == 'E':
+        choiceFormset = inlineformset_factory(Question, Choice, form=ChoicesForm_E, extra=question.n_choices)
+    elif question.question_type == 'D':
+        return HttpResponseRedirect(reverse('polls:index'))
+
+    if request.method == 'POST':
+        form = choiceFormset(request.POST, instance = question)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('polls:index'))
+
+    form = choiceFormset( instance = question)
+    return render(request, 'polls/create_answer.html', {'form': form})
