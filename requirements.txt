@@ -8,7 +8,7 @@ Django==2.2
 django-crispy-forms==1.7.2
 django-filter==2.1.0
 django-mailjet==0.3.1
-django-registration==3.0
+django-registration==3.1.2
 django-widget-tweaks==1.4.3
 djangorestframework==3.9.3
 html5lib==1.0.1
